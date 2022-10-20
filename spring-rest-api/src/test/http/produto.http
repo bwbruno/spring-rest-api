@@ -1,0 +1,33 @@
+@baseUrl = http://localhost:8080/api/produtos
+@contentType = application/json
+
+GET {{baseUrl}}
+
+###
+
+POST {{baseUrl}}
+Content-Type: {{contentType}}
+
+{
+    "descricao": "arroz",
+    "preco": "10.39"
+}
+
+###
+
+PUT {{baseUrl}}/3
+Content-Type: {{contentType}}
+
+{
+    "descricao": "fanta",
+    "preco": "4.4"
+}
+
+###
+
+PATCH {{baseUrl}}/4
+Content-Type: {{contentType}}
+
+{
+    "descricao": "joaquina"
+}

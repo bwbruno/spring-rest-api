@@ -1,0 +1,11 @@
+{
+    "editor.codeActionsOnSave": {
+    
+    },
+    "vim.insertModeKeyBindings": [
+        {
+            "before": ["j", "j"],
+            "after": ["<esc>"]
+        }
+    ]
+}
