@@ -1,0 +1,33 @@
+@baseUrl = http://localhost:8080/api/clientes
+@contentType = application/json
+
+GET {{baseUrl}}
+
+###
+
+POST {{baseUrl}}
+Content-Type: {{contentType}}
+
+{
+    "nome": "olivia",
+    "cpf": "09809789"
+}
+
+###
+
+PUT {{baseUrl}}/6
+Content-Type: {{contentType}}
+
+{
+    "nome": "fanta",
+    "cpf": "2902130"
+}
+
+###
+
+PATCH {{baseUrl}}/6
+Content-Type: {{contentType}}
+
+{
+    "nome": "joaquina"
+}
