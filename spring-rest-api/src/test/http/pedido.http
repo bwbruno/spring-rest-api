@@ -1,0 +1,68 @@
+@baseUrl = http://localhost:8080/api/pedidos
+@contentType = application/json
+
+
+
+GET {{baseUrl}}
+###
+GET {{baseUrl}}/16
+
+###
+
+POST {{baseUrl}}
+Content-Type: {{contentType}}
+
+{
+    "cliente" : 1,
+    "items" : [
+        {
+            "produto": 1,
+            "quantidade": 1000
+        },
+        {
+            "produto": 2,
+            "quantidade": 2
+        }
+    ]
+}
+
+
+###
+
+PUT {{baseUrl}}/6
+Content-Type: {{contentType}}
+
+{
+    "nome": "fanta",
+    "cpf": "2902130"
+}
+
+###
+
+PATCH {{baseUrl}}/1/cliente
+Content-Type: {{contentType}}
+
+{
+    "novoClienteId": 2
+}
+
+###
+PATCH {{baseUrl}}/2/itens
+Content-Type: {{contentType}}
+
+{
+    "novosItens": [
+        {
+            "produto": 1,
+            "quantidade": 2
+        },
+        {
+            "produto": 2,
+            "quantidade": 3
+        }
+    ]
+}
+
+###
+
+DELETE {{baseUrl}}/5

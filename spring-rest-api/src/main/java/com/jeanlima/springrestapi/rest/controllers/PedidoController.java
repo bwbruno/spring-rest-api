@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.util.CollectionUtils;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,9 +23,12 @@ import org.springframework.web.server.ResponseStatusException;
 import com.jeanlima.springrestapi.enums.StatusPedido;
 import com.jeanlima.springrestapi.model.ItemPedido;
 import com.jeanlima.springrestapi.model.Pedido;
+import com.jeanlima.springrestapi.rest.dto.AtualizacaoClientePedidoDTO;
+import com.jeanlima.springrestapi.rest.dto.AtualizacaoItemPedidoDTO;
 import com.jeanlima.springrestapi.rest.dto.AtualizacaoStatusPedidoDTO;
 import com.jeanlima.springrestapi.rest.dto.InformacaoItemPedidoDTO;
 import com.jeanlima.springrestapi.rest.dto.InformacoesPedidoDTO;
+import com.jeanlima.springrestapi.rest.dto.ItemPedidoDTO;
 import com.jeanlima.springrestapi.rest.dto.PedidoDTO;
 import com.jeanlima.springrestapi.service.PedidoService;
 
@@ -37,11 +41,30 @@ public class PedidoController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Integer save( @RequestBody PedidoDTO dto ){
+    public InformacoesPedidoDTO save( @RequestBody PedidoDTO dto ){
         Pedido pedido = service.salvar(dto);
-        return pedido.getId();
+        return converter(pedido);
     }
 
+    @GetMapping
+    public List<InformacoesPedidoDTO> getAll() {
+        return service
+            .obterTodosOsPedidos()
+            .stream()
+            .map(
+                pedido -> InformacoesPedidoDTO
+                    .builder()
+                    .codigo(pedido.getId())
+                    .dataPedido(pedido.getDataPedido().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
+                    .cpf(pedido.getCliente().getCpf())
+                    .nomeCliente(pedido.getCliente().getNome())
+                    .total(pedido.getTotal())
+                    .status(pedido.getStatus().name())
+                    .items(converter(pedido.getItens()))
+                    .build()
+            )
+            .collect(Collectors.toList());
+    }
     @GetMapping("{id}")
     public InformacoesPedidoDTO getById( @PathVariable Integer id ){
         return service
@@ -84,5 +107,29 @@ public class PedidoController {
                              @RequestBody AtualizacaoStatusPedidoDTO dto){
         String novoStatus = dto.getNovoStatus();
         service.atualizaStatus(id, StatusPedido.valueOf(novoStatus));
+    }
+
+    @PatchMapping("{id}/cliente")
+    @ResponseStatus(HttpStatus.OK)
+    public InformacoesPedidoDTO updateCliente(@PathVariable Integer id,
+                              @RequestBody AtualizacaoClientePedidoDTO dto) {
+
+        Integer clienteId = dto.getNovoClienteId();
+        return converter(service.atualizaCliente(id, clienteId));
+    }
+
+    @PatchMapping("{id}/itens")
+    @ResponseStatus(HttpStatus.OK)
+    public InformacoesPedidoDTO updateItens(@PathVariable Integer id,
+                              @RequestBody AtualizacaoItemPedidoDTO dto) {
+
+        List<ItemPedidoDTO> novosItens = dto.getNovosItens();
+        return converter(service.atualizaItens(id, novosItens));
+    }
+
+    @DeleteMapping("{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void DeleteMapping(@PathVariable Integer id) {
+        service.excluirPedido(id);
     }
 }

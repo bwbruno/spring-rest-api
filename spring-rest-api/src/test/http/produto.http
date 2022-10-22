@@ -2,32 +2,36 @@
 @contentType = application/json
 
 GET {{baseUrl}}
+###
+GET {{baseUrl}}?id=1
+###
+GET {{baseUrl}}?preco=10.39
 
 ###
-
 POST {{baseUrl}}
 Content-Type: {{contentType}}
 
 {
-    "descricao": "arroz",
-    "preco": "10.39"
+    "descricao": "coca",
+    "preco": "10.10"
 }
 
 ###
-
-PUT {{baseUrl}}/3
+PUT {{baseUrl}}/2
 Content-Type: {{contentType}}
 
 {
-    "descricao": "fanta",
+    "descricao": "arroz",
     "preco": "4.4"
 }
 
 ###
-
 PATCH {{baseUrl}}/4
 Content-Type: {{contentType}}
 
 {
     "descricao": "joaquina"
 }
+
+###
+DELETE {{baseUrl}}/2

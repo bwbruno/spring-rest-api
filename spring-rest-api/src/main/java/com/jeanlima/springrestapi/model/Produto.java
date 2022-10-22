@@ -2,11 +2,13 @@ package com.jeanlima.springrestapi.model;
 
 import java.math.BigDecimal;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 @Entity
@@ -23,6 +25,17 @@ public class Produto {
     
     @Column(precision = 10,scale = 2)
     private BigDecimal preco;
+
+    @OneToOne(mappedBy = "produto", cascade = CascadeType.ALL)
+    private Estoque estoque;
+    
+    public Estoque getEstoque() {
+        return estoque;
+    }
+
+    public void setEstoque(Estoque estoque) {
+        this.estoque = estoque;
+    }
 
     public Integer getId() {
         return id;

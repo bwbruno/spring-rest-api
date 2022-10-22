@@ -1,0 +1,39 @@
+@baseUrl = http://localhost:8080/api/estoques
+@contentType = application/json
+
+GET {{baseUrl}}
+###
+GET {{baseUrl}}?nomeProduto=arroz
+
+###
+
+POST {{baseUrl}}
+Content-Type: {{contentType}}
+
+{
+    "produto" : 1,
+    "quantidade" : 10
+}
+
+
+###
+
+PUT {{baseUrl}}/1
+Content-Type: {{contentType}}
+
+{
+    "quantidade" : 15
+}
+
+###
+
+patch {{baseUrl}}/5
+Content-Type: {{contentType}}
+
+{
+    "quantidade": 5
+}
+
+###
+
+DELETE {{baseUrl}}/3

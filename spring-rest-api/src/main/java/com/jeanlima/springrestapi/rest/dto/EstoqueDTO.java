@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.util.List;
 
+import com.jeanlima.springrestapi.model.Estoque;
+
 /*
  * {
     "cliente" : 1,
@@ -24,7 +26,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class PedidoDTO {
-    private Integer cliente;
-    private List<ItemPedidoDTO> items;
+public class EstoqueDTO {
+    private Integer produto;
+    private Integer quantidade;
 }

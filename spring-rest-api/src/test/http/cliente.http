@@ -5,11 +5,15 @@ GET {{baseUrl}}
 
 ###
 
+GET {{baseUrl}}/detalhes/1
+
+###
+
 POST {{baseUrl}}
 Content-Type: {{contentType}}
 
 {
-    "nome": "olivia",
+    "nome": "bruno",
     "cpf": "09809789"
 }
 

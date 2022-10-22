@@ -35,6 +35,11 @@ public class PedidoServiceImpl implements PedidoService {
     private final ItemPedidoRepository itemsPedidoRepository;
 
     @Override
+    public List<Pedido> obterTodosOsPedidos() {
+        return repository.findAll();
+    }
+
+    @Override
     @Transactional
     public Pedido salvar(PedidoDTO dto) {
         Integer idCliente = dto.getCliente();
@@ -43,17 +48,20 @@ public class PedidoServiceImpl implements PedidoService {
                 .orElseThrow(() -> new RegraNegocioException("Código de cliente inválido."));
 
         Pedido pedido = new Pedido();
-        pedido.setTotal(dto.getTotal());
         pedido.setDataPedido(LocalDate.now());
         pedido.setCliente(cliente);
         pedido.setStatus(StatusPedido.REALIZADO);
 
         List<ItemPedido> itemsPedido = converterItems(pedido, dto.getItems());
+
+        pedido.setItens(itemsPedido);
+        pedido.atualizarEstoque("SUBTRAIR");
+        pedido.atualizarTotal();
         repository.save(pedido);
         itemsPedidoRepository.saveAll(itemsPedido);
-        pedido.setItens(itemsPedido);
         return pedido;
     }
+
     private List<ItemPedido> converterItems(Pedido pedido, List<ItemPedidoDTO> items){
         if(items.isEmpty()){
             throw new RegraNegocioException("Não é possível realizar um pedido sem items.");
@@ -69,7 +77,6 @@ public class PedidoServiceImpl implements PedidoService {
                                     () -> new RegraNegocioException(
                                             "Código de produto inválido: "+ idProduto
                                     ));
-
                     ItemPedido itemPedido = new ItemPedido();
                     itemPedido.setQuantidade(dto.getQuantidade());
                     itemPedido.setPedido(pedido);
@@ -78,11 +85,13 @@ public class PedidoServiceImpl implements PedidoService {
                 }).collect(Collectors.toList());
 
     }
+
     @Override
     public Optional<Pedido> obterPedidoCompleto(Integer id) {
         
         return repository.findByIdFetchItens(id);
     }
+
     @Override
     public void atualizaStatus(Integer id, StatusPedido statusPedido) {
         repository
@@ -92,5 +101,46 @@ public class PedidoServiceImpl implements PedidoService {
                     return repository.save(pedido);
                 }).orElseThrow(() -> new PedidoNaoEncontradoException() );
         
+    }
+
+    @Override
+    @Transactional
+    public Pedido atualizaCliente(Integer id, Integer clienteId) {
+        Cliente cliente = clientesRepository
+                            .findById(clienteId)
+                            .orElseThrow(
+                                () -> new RegraNegocioException("Código de cliente inválido.")
+                            );
+
+        Pedido pedido = repository
+                            .findById(id)
+                            .orElseThrow(
+                                () -> new RegraNegocioException("Pedido não foi encontrado.")
+                            );
+        
+        pedido.setCliente(cliente);
+        return repository.save(pedido);
+    }
+
+    @Override
+    public void excluirPedido(Integer id) {
+        repository.deleteById(id);
+    }
+
+    @Override
+    public Pedido atualizaItens(Integer id, List<ItemPedidoDTO> novosItens) {
+        Pedido pedido = repository
+                            .findById(id)
+                            .orElseThrow(
+                                () -> new RegraNegocioException("Pedido não foi encontrado.")
+                            );
+        
+        pedido.atualizarEstoque("SOMAR");
+        List<ItemPedido> itemsPedido = converterItems(pedido, novosItens);
+        pedido.setItens(itemsPedido);
+        pedido.atualizarEstoque("SUBTRAIR");
+        pedido.atualizarTotal();
+        itemsPedidoRepository.saveAll(itemsPedido);
+        return repository.save(pedido);
     }
 }

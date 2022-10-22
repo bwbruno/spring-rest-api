@@ -1,6 +1,9 @@
 package com.jeanlima.springrestapi.rest.controllers;
 
+import java.lang.reflect.Field;
+import java.net.URI;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,22 +11,23 @@ import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
+import org.springframework.util.ReflectionUtils;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.jeanlima.springrestapi.model.Cliente;
 import com.jeanlima.springrestapi.repository.ClienteRepository;
+import com.jeanlima.springrestapi.rest.dto.InformacoesClienteDTO;
 
 @RequestMapping("/api/clientes")
 @RestController //anotação especializadas de controller - todos já anotados com response body!
@@ -39,6 +43,15 @@ public class ClienteController {
                 .orElseThrow(() -> //se nao achar lança o erro!
                         new ResponseStatusException(HttpStatus.NOT_FOUND,
                                 "Cliente não encontrado"));
+    }
+
+    @GetMapping("detalhes/{id}")
+    public InformacoesClienteDTO getClienteDetalhesById( @PathVariable Integer id ){
+        return clientes
+                .findById(id)
+                .map( c -> new InformacoesClienteDTO(c) )
+                .orElseThrow(() ->
+                        new ResponseStatusException(HttpStatus.NOT_FOUND, "Pedido não encontrado."));
     }
 
     @PostMapping
@@ -86,4 +99,26 @@ public class ClienteController {
         return clientes.findAll(example);
     }
 
+    @PatchMapping("/{id}")
+    public ResponseEntity<Cliente> updatePartially(@PathVariable int id, @RequestBody Map<String, Object> fields, UriComponentsBuilder uriBuilder) {
+
+        Optional<Cliente> cliente = clientes.findById(id);
+
+        if (cliente.isPresent()) {
+            fields.forEach((key, value) -> {
+                Field field = ReflectionUtils.findField(Cliente.class, (String) key);
+                field.setAccessible(true);
+                ReflectionUtils.setField(field, cliente.get(), value);
+            });
+            clientes.save(cliente.get());
+
+            URI uri = uriBuilder
+                            .path("/api/clientes/{id}")
+                            .buildAndExpand(cliente.get().getId()).toUri();
+
+            return ResponseEntity.created(uri).body(cliente.get());
+        }
+
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
 }
